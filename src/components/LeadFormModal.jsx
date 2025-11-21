@@ -14,7 +14,7 @@ export default function LeadFormModal({ lead = {}, template, onClose, onSave }) 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[999] px-4">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-999 px-4">
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-gray-200 max-h-[90vh] flex flex-col">
 
         {/* Header */}

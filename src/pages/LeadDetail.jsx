@@ -18,7 +18,7 @@ export default function LeadDetail() {
       </div>
     );
   }
-
+  console.log("Lead Detail:", lead);
   return (
     <div className="max-w-6xl mx-auto p-10 bg-white rounded-2xl shadow-lg mt-8 space-y-10">
 
@@ -38,17 +38,44 @@ export default function LeadDetail() {
           Convert to Deal
         </button>
       </div>
+      {/* type LeadDocument = mongoose.Document & {
+        lead_id: string;
+      lead_name: string;
+      createdAt: Date;
+      is_delete: boolean;
+      customer_email: string;
+      customer_mobile: string;
+      customer_name: string;
+      pincode: string;
+      city: string;
+      deal_nickname: string;
+      address: string;
+      deal_type: string;
+      latitude: string;
+      longitude: string;
+      customer_whatsapp: string;
+      lead_owner: mongoose.Types.ObjectId;
+      lead_owner_email: string;
+      property_type: string;
+      form_updated_at: Date | null;
+      profile_shared_at: Date | null;
+      status: "new" | "in_progress" | "converted";
+      form_history: {
+        version: number;
+      data: any;
+      updated_at: Date;
+  }[];
+}; */}
 
-      {/* Main fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <Field label="Email" value={v(lead.email)} />
-        <Field label="Phone" value={v(lead.phone)} />
-        <Field label="Alternate Phone" value={v(lead.alt_phone)} />
-        <Field label="Company" value={v(lead.company)} />
-        <Field label="Industry" value={v(lead.industry)} />
-        <Field label="Source" value={v(lead.source)} />
-        <Field label="Assigned To" value={v(lead.assigned_to)} />
+        <Field label="Customer Name" value={v(lead.customer_name)} />
+        <Field label="Email" value={v(lead.customer_email)} />
+        <Field label="Phone" value={v(lead.customer_mobile)} />
+        <Field label="Whatsapp Number" value={v(lead.customer_whatsapp)} />
+        <Field label="Lead Owner" value={v(lead.lead_owner_email)} />
         <Field label="Address" value={v(lead.address)} className="lg:col-span-2" />
+        <Field label="Pincode" value={v(lead.pincode)} className="lg:col-span-2" />
+        <Field label="City" value={v(lead.city)} className="lg:col-span-2" />
         <Field label="Created At" value={lead.createdAt ? new Date(lead.createdAt).toLocaleString() : "-"} />
         <Field label="Last Updated" value={lead.updatedAt ? new Date(lead.updatedAt).toLocaleString() : "-"} />
       </div>
