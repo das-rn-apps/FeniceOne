@@ -30,45 +30,56 @@ export default function LeadListView() {
   };
 
   const statusColors = {
-    New: "bg-gray-100 text-gray-700",
-    Contacted: "bg-blue-100 text-blue-700",
-    Qualified: "bg-amber-100 text-amber-700",
-    "Follow Up": "bg-purple-100 text-purple-700",
-    Lost: "bg-red-100 text-red-700",
+    New: "bg-gray-100 text-gray-800 border-gray-300",
+    Contacted: "bg-blue-100 text-blue-800 border-blue-300",
+    Qualified: "bg-amber-100 text-amber-800 border-amber-300",
+    "Follow Up": "bg-purple-100 text-purple-800 border-purple-300",
+    Lost: "bg-red-100 text-red-800 border-red-300",
   };
 
   if (loading)
     return (
-      <p className="text-center mt-10 text-gray-600 text-lg font-medium">
-        Loading leads...
-      </p>
+      <div className="flex justify-center pt-20">
+        <p className="text-gray-600 text-lg font-medium animate-pulse">
+          Loading leads...
+        </p>
+      </div>
     );
 
   return (
-    <div className="p-8 w-full">
+    <div className="w-full px-8 py-6">
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          Lead Management
-        </h1>
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+            Lead Management
+          </h1>
+          <p className="text-gray-500 mt-1 text-sm">
+            Manage and track all customer leads efficiently
+          </p>
+        </div>
 
         <input
           type="text"
-          placeholder="Search leads..."
+          placeholder="Search by name, phone or email"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-64 px-4 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500"
+          className="w-72 px-4 py-2 text-sm rounded-lg border border-gray-300 shadow-sm
+          focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         />
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto shadow-xl rounded-xl border border-gray-200">
-        <table className="w-full min-w-[1000px]">
-          <thead className="bg-gray-100 sticky top-0">
-            <tr className="text-left text-sm font-semibold text-gray-600">
-              {["Lead Name", "Email", "Phone", "Status", "Profile Shared", "Created At", "Form"].map(
+      <div className="overflow-x-auto rounded-xl shadow-md border border-gray-200">
+        <table className="w-full min-w-[1100px]">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr className="text-left text-sm font-semibold text-gray-700">
+              {["Lead Name", "Email", "Phone", "Status", "Profile Shared", "Created At", "Actions"].map(
                 (head) => (
-                  <th key={head} className="p-4">{head}</th>
+                  <th key={head} className="p-4 uppercase tracking-wider">
+                    {head}
+                  </th>
                 )
               )}
             </tr>
@@ -81,17 +92,16 @@ export default function LeadListView() {
                 onClick={() => navigate(`/lead/${lead._id}`)}
                 className="cursor-pointer hover:bg-blue-50 transition-all border-b last:border-none"
               >
-                <td className="p-4 font-medium text-gray-900">{lead.lead_name}</td>
-                <td className="p-4">{lead.email}</td>
-                <td className="p-4">{lead.phone}</td>
+                <td className="p-4 font-semibold text-gray-900">{lead.lead_name || "-"}</td>
+                <td className="p-4">{lead.customer_email || "-"}</td>
+                <td className="p-4">{lead.customer_mobile || "-"}</td>
 
-                {/* Status badge */}
                 <td className="p-4">
                   <select
                     value={lead.status}
                     onClick={(e) => e.stopPropagation()}
                     onChange={(e) => handleStatusChange(lead._id, e.target.value, e)}
-                    className={`px-2 py-1 rounded-md text-xs font-semibold border border-gray-300 ${statusColors[lead.status]}`}
+                    className={`px-2 py-1 rounded-md text-xs font-semibold border ${statusColors[lead.status]}`}
                   >
                     <option value="New">New</option>
                     <option value="Contacted">Contacted</option>
@@ -101,16 +111,15 @@ export default function LeadListView() {
                   </select>
                 </td>
 
-                {/* Profile share switch */}
                 <td className="p-4">
                   <button
                     onClick={(e) => { e.stopPropagation(); handleProfileShareToggle(lead._id, !lead.profile_share); }}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition ${lead.profile_share
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-200 text-gray-600"
+                    className={`px-4 py-1 rounded-full text-xs font-semibold border transition ${lead.profile_share
+                      ? "bg-green-100 text-green-800 border-green-300"
+                      : "bg-gray-200 text-gray-700 border-gray-300"
                       }`}
                   >
-                    {lead.profile_share ? "Shared" : "No"}
+                    {lead.profile_share ? "YES" : "NO"}
                   </button>
                 </td>
 
@@ -119,9 +128,9 @@ export default function LeadListView() {
                 <td className="p-4">
                   <button
                     onClick={(e) => { e.stopPropagation(); setOpenLead(lead); }}
-                    className="px-3 py-1 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700"
+                    className="px-4 py-1 bg-blue-600 text-white rounded-lg text-xs shadow hover:bg-blue-700 transition"
                   >
-                    Open Form
+                    OPEN FORM
                   </button>
                 </td>
               </tr>
@@ -133,7 +142,7 @@ export default function LeadListView() {
       {/* Modal */}
       {openLead && templates.length > 0 && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-[550px] shadow-2xl rounded-2xl p-6 animate-fadeIn">
+          <div className="bg-white w-[600px] shadow-2xl rounded-2xl p-6 animate-fadeIn">
             <LeadFormModal
               lead={openLead}
               template={templates[0]}
