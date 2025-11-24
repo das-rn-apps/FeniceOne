@@ -1,157 +1,213 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLeads, updateLeadStatus, updateProfileShare } from "../features/leads/leadsSlice";
-import { fetchTemplates } from "../features/formTemplates/formTemplatesSlice";
-import LeadFormModal from "../components/LeadFormModal";
 import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+
+const statusColors = {
+  new: "bg-blue-100 text-blue-700 border-blue-400",
+  in_progress: "bg-yellow-100 text-yellow-700 border-yellow-400",
+  converted: "bg-green-100 text-green-700 border-green-400",
+  lost: "bg-red-100 text-red-700 border-red-400",
+};
 
 export default function LeadListView() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const { list, loading } = useSelector((state) => state.leads);
-  const templates = useSelector((state) => state.formTemplates?.templates || []);
 
-  const [openLead, setOpenLead] = useState(null);
-  const [search, setSearch] = useState("");
+  const [meetForm, setMeetForm] = useState(null);
+  const [responseDrawerLead, setResponseDrawerLead] = useState(null);
+  const [hoverLead, setHoverLead] = useState(null);
+
+  /* Form State */
+  const [formState, setFormState] = useState({
+    site_location: "",
+    customer_name: "",
+    phone: "",
+    survey_date: "",
+    roof_type: "",
+    shadow_analysis: "",
+    rooftop_area: "",
+    load_requirement: "",
+    distance_meter: "",
+    mount_type: "",
+    comments: "",
+  });
+
+  const handleFormChange = (k, v) => setFormState((p) => ({ ...p, [k]: v }));
 
   useEffect(() => {
     dispatch(fetchLeads());
-    dispatch(fetchTemplates());
   }, [dispatch]);
 
-  const handleStatusChange = (id, newStatus, e) => {
-    e.stopPropagation();
-    dispatch(updateLeadStatus({ id, status: newStatus }));
+  const handleSubmitForm = () => {
+    const payload = { lead_id: meetForm._id, ...formState };
+    console.log("Submitting payload:", payload); // Send to API later
+    alert("Survey Form Submitted Successfully!");
+    setMeetForm(null);
   };
 
-  const handleProfileShareToggle = (id, newValue) => {
-    dispatch(updateProfileShare({ id, value: newValue }));
-  };
-
-  const statusColors = {
-    New: "bg-gray-100 text-gray-800 border-gray-300",
-    Contacted: "bg-blue-100 text-blue-800 border-blue-300",
-    Qualified: "bg-amber-100 text-amber-800 border-amber-300",
-    "Follow Up": "bg-purple-100 text-purple-800 border-purple-300",
-    Lost: "bg-red-100 text-red-800 border-red-300",
-  };
-
-  if (loading)
-    return (
-      <div className="flex justify-center pt-20">
-        <p className="text-gray-600 text-lg font-medium animate-pulse">
-          Loading leads...
-        </p>
-      </div>
-    );
+  if (loading) return <p className="pt-20 text-center">Loading...</p>;
 
   return (
-    <div className="w-full px-8 py-6">
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
-            Lead Management
-          </h1>
-          <p className="text-gray-500 mt-1 text-sm">
-            Manage and track all customer leads efficiently
-          </p>
-        </div>
-
-        <input
-          type="text"
-          placeholder="Search by name, phone or email"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-72 px-4 py-2 text-sm rounded-lg border border-gray-300 shadow-sm
-          focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-        />
-      </div>
-
+    <div className="w-full p-5">
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl shadow-md border border-gray-200">
+      <div className="overflow-x-auto rounded-2xl shadow-lg border border-gray-200 bg-white">
         <table className="w-full min-w-[1100px]">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr className="text-left text-sm font-semibold text-gray-700">
-              {["Lead Name", "Email", "Phone", "Status", "Profile Shared", "Created At", "Actions"].map(
-                (head) => (
-                  <th key={head} className="p-4 uppercase tracking-wider">
-                    {head}
-                  </th>
-                )
-              )}
+          <thead className="bg-gray-50">
+            <tr className="text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">
+              {["Lead Name", "Email", "Phone", "Status", "Shared", "Created", "Responses", "Meeting"].map((h) => (
+                <th key={h} className="p-4">{h}</th>
+              ))}
             </tr>
           </thead>
 
           <tbody className="text-sm text-gray-800">
             {list.map((lead) => (
-              <tr
-                key={lead._id}
-                onClick={() => navigate(`/lead/${lead._id}`)}
-                className="cursor-pointer hover:bg-blue-50 transition-all border-b last:border-none"
-              >
-                <td className="p-4 font-semibold text-gray-900">{lead.lead_name || "-"}</td>
-                <td className="p-4">{lead.customer_email || "-"}</td>
-                <td className="p-4">{lead.customer_mobile || "-"}</td>
+              <tr key={lead._id}
+                className="cursor-pointer hover:bg-blue-50 border-b transition"
+                onClick={() => navigate(`/lead/${lead._id}`)}>
 
+                <td className="p-4 font-semibold">{lead.lead_name}</td>
+                <td className="p-4">{lead.customer_email}</td>
+                <td className="p-4">{lead.customer_mobile}</td>
+
+                {/* Status */}
                 <td className="p-4">
                   <select
+                    className={`px-2 py-1 rounded text-xs border font-semibold ${statusColors[lead.status]}`}
                     value={lead.status}
                     onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => handleStatusChange(lead._id, e.target.value, e)}
-                    className={`px-2 py-1 rounded-md text-xs font-semibold border ${statusColors[lead.status]}`}
-                  >
-                    <option value="New">New</option>
-                    <option value="Contacted">Contacted</option>
-                    <option value="Qualified">Qualified</option>
-                    <option value="Follow Up">Follow Up</option>
-                    <option value="Lost">Lost</option>
+                    onChange={(e) => dispatch(updateLeadStatus({ id: lead._id, status: e.target.value }))}>
+                    <option value="new">New</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="converted">Converted</option>
+                    <option value="lost">Lost</option>
                   </select>
                 </td>
 
+                {/* Checkbox */}
+                <td className="p-4">
+                  <Checkbox checked={lead.profile_share}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(v) => dispatch(updateProfileShare({ id: lead._id, value: v }))}
+                  />
+                </td>
+
+                <td className="p-4">{lead.createdAt?.slice(0, 10)}</td>
+
+                {/* Details Drawer */}
                 <td className="p-4">
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleProfileShareToggle(lead._id, !lead.profile_share); }}
-                    className={`px-4 py-1 rounded-full text-xs font-semibold border transition ${lead.profile_share
-                      ? "bg-green-100 text-green-800 border-green-300"
-                      : "bg-gray-200 text-gray-700 border-gray-300"
-                      }`}
-                  >
-                    {lead.profile_share ? "YES" : "NO"}
+                    className="px-3 py-1 bg-gray-900 hover:bg-black text-white rounded-md text-xs"
+                    onClick={(e) => { e.stopPropagation(); setResponseDrawerLead(lead); }}
+                    onMouseEnter={() => setHoverLead(lead)}
+                    onMouseLeave={() => setHoverLead(null)}>
+                    Show Details
                   </button>
                 </td>
 
-                <td className="p-4">{lead.createdAt?.slice(0, 10) || "-"}</td>
-
+                {/* Meeting */}
                 <td className="p-4">
                   <button
-                    onClick={(e) => { e.stopPropagation(); setOpenLead(lead); }}
-                    className="px-4 py-1 bg-blue-600 text-white rounded-lg text-xs shadow hover:bg-blue-700 transition"
-                  >
-                    OPEN FORM
+                    className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                    onClick={(e) => { e.stopPropagation(); setMeetForm(lead); }}>
+                    <Plus size={16} />
                   </button>
                 </td>
+
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Modal */}
-      {openLead && templates.length > 0 && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white w-[600px] shadow-2xl rounded-2xl p-6 animate-fadeIn">
-            <LeadFormModal
-              lead={openLead}
-              template={templates[0]}
-              onClose={() => setOpenLead(null)}
-              onSave={(updated) => console.log("Updated Lead:", updated)}
-            />
-          </div>
-        </div>
-      )}
+      {/* MEETING FORM DRAWER */}
+      {meetForm && <MeetingDrawer meetForm={meetForm} setMeetForm={setMeetForm} formState={formState} handleChange={handleFormChange} submit={handleSubmitForm} />}
+
+      {/* DETAILS DRAWER */}
+      {(responseDrawerLead || hoverLead) && <ResponseDrawer lead={responseDrawerLead || hoverLead} close={() => { setHoverLead(null); setResponseDrawerLead(null); }} />}
+
     </div>
   );
 }
+
+/* Reusable components */
+const Input = ({ label, ...props }) => (
+  <div>
+    <label className="text-sm font-semibold">{label}</label>
+    <input {...props} className="w-full border px-3 py-2 rounded-lg mt-1" />
+  </div>
+);
+
+const Select = ({ label, options, ...props }) => (
+  <div>
+    <label className="text-sm font-semibold">{label}</label>
+    <select {...props} className="w-full border px-3 py-2 rounded-lg mt-1">
+      <option value="">Select</option>
+      {options.map((o) => <option key={o}>{o}</option>)}
+    </select>
+  </div>
+);
+
+const Checkbox = ({ checked, onChange, onClick }) => (
+  <input type="checkbox" checked={checked} className="w-5 h-5 accent-green-600 cursor-pointer"
+    onClick={onClick} onChange={(e) => onChange(e.target.checked)} />
+);
+
+const MeetingDrawer = ({ meetForm, setMeetForm, formState, handleChange, submit }) => (
+  <div className="fixed inset-0 bg-black/40 z-50">
+    <div className="fixed left-0 top-0 h-full w-[75vw] bg-white shadow-2xl border-r p-6 animate-slideIn overflow-y-auto">
+      <div className="flex justify-between items-center mb-5">
+        <h2 className="text-2xl font-bold">Solar Site Survey — {meetForm.lead_name}</h2>
+        <button onClick={() => setMeetForm(null)} className="text-3xl hover:text-black">×</button>
+      </div>
+
+      <form className="grid grid-cols-2 gap-4">
+        <Input label="Site Location" value={formState.site_location} onChange={(e) => handleChange("site_location", e.target.value)} />
+        <Input label="Customer Name" value={formState.customer_name} onChange={(e) => handleChange("customer_name", e.target.value)} />
+        <Input label="Phone Number" value={formState.phone} onChange={(e) => handleChange("phone", e.target.value)} />
+        <Input label="Survey Date" type="date" value={formState.survey_date} onChange={(e) => handleChange("survey_date", e.target.value)} />
+
+        <Select label="Roof Type" value={formState.roof_type} onChange={(e) => handleChange("roof_type", e.target.value)} options={["RCC", "Metal Sheet", "Asbestos", "Tile"]} />
+        <Select label="Shadow Analysis" value={formState.shadow_analysis} onChange={(e) => handleChange("shadow_analysis", e.target.value)} options={["Yes", "No"]} />
+
+        <Input label="Available Rooftop Area (sqft)" value={formState.rooftop_area} onChange={(e) => handleChange("rooftop_area", e.target.value)} />
+        <Input label="Load Requirement (kW)" value={formState.load_requirement} onChange={(e) => handleChange("load_requirement", e.target.value)} />
+        <Input label="Distance to Main Meter (meters)" value={formState.distance_meter} onChange={(e) => handleChange("distance_meter", e.target.value)} />
+        <Select label="Mount Type" value={formState.mount_type} onChange={(e) => handleChange("mount_type", e.target.value)} options={["Rooftop", "Ground Mounted"]} />
+
+        <div className="col-span-2">
+          <label className="text-sm font-semibold">Additional Comments</label>
+          <textarea rows={4} className="w-full border rounded-lg p-3 mt-1"
+            value={formState.comments} onChange={(e) => handleChange("comments", e.target.value)} />
+        </div>
+      </form>
+
+      <div className="mt-6 flex justify-end gap-4">
+        <button onClick={() => setMeetForm(null)} className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Cancel</button>
+        <button onClick={submit} className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save</button>
+      </div>
+    </div>
+  </div>
+);
+
+const ResponseDrawer = ({ lead, close }) => (
+  <div className="fixed left-0 top-0 h-full w-[75vw] bg-white shadow-2xl border-r p-6 animate-slideIn overflow-y-auto">
+    <div className="flex justify-between items-center mb-5">
+      <h2 className="text-2xl font-bold">Meeting Details — {lead.lead_name}</h2>
+      <button onClick={close} className="text-3xl hover:text-black">×</button>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
+      {lead.form_history?.map((r, i) => (
+        <div key={i} className="p-4 bg-gray-100 rounded-xl border shadow-sm">
+          <p className="text-sm font-semibold">Version {r.version}</p>
+          <p className="text-xs text-gray-600">Updated: {r.updated_at?.slice(0, 10)}</p>
+          <pre className="text-xs whitespace-pre-wrap mt-2">{JSON.stringify(r, null, 2)}</pre>
+        </div>
+      ))}
+    </div>
+  </div>
+);
