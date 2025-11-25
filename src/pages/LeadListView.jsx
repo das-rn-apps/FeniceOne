@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchLeads, updateLeadStatus, updateProfileShare } from "../features/leads/leadsSlice";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
+import axios from "axios";
+
 
 const statusColors = {
   new: "bg-blue-100 text-blue-700 border-blue-400",
@@ -41,11 +43,23 @@ export default function LeadListView() {
     dispatch(fetchLeads());
   }, [dispatch]);
 
-  const handleSubmitForm = () => {
+  const handleSubmitForm = async () => {
     const payload = { lead_id: meetForm._id, ...formState };
-    console.log("Submitting payload:", payload); // Send to API later
-    alert("Survey Form Submitted Successfully!");
-    setMeetForm(null);
+    console.log("Submitting payload:", payload);
+    try {
+      const response = await axios.post(
+        "https://seonebodev.sunedison.in/bo/api/lead/updateLeadData",
+        payload
+      );
+
+      setMeetForm(null);
+      alert("Survey Form Submitted Successfully!");
+      return response;
+    } catch (error) {
+      console.error("API submission failed:", error);
+      alert("Submission Failed: Please try again.");
+      throw error;
+    }
   };
 
   if (loading) return <p className="pt-20 text-center">Loading...</p>;

@@ -69,7 +69,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 // Mock async call
 export const fetchLeads = createAsyncThunk("leads/fetch", async () => {
   try {
-    const res = await fetch("https://seonebodev.sunedison.in/bo/api/lead/getAllLeads");
+    const res = await fetch("https://seonebodev.sunedison.in/bo/api/lead/getLeads");
 
     if (!res.ok) {
       throw new Error(`HTTP Error: ${res.status}`);
